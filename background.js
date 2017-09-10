@@ -19,30 +19,41 @@ var responseCookies = cookies.map((cookieVal) => {
 
 var responseSetCookieValue = responseCookies.join('\n');
 
-function rewriteRequestCookieHeader(e) {
-  var hasSetCookie = false;
+function rewriteRequestHeader(e) {
+  var headersChanged = {};
+  var shouldSetCacheHeader = e.url.includes('/watch?');
 
   for (var header of e.requestHeaders) {
-    if (header.name.toLowerCase() == 'cookie') {
+    if (header.name.toLowerCase() === 'cookie') {
       header.value = requestCookies;
-      hasSetCookie = true;
+      headersChanged.cookie = true;
+    }
+    if (header.name.toLowerCase() === 'cache-control') {
+      header.value = 'max-age=0';
+      headersChanged.cacheControl = true;
     }
   }
 
-  if (!hasSetCookie) {
+  if (!headersChanged.cookie) {
     e.requestHeaders.push({
       name: 'Cookie',
       value: requestCookies
     });
   }
 
+  if (shouldSetCacheHeader && !headersChanged.cacheControl) {
+    e.requestHeaders.push({
+      name: 'Cache-Control',
+      value: 'max-age=0'
+    });
+  }
+
   return { requestHeaders: e.requestHeaders };
 }
 
-function rewriteResponseCookieHeader(e) {
+function rewriteResponseHeader(e) {
   for (var header of e.responseHeaders) {
     if (header.name.toLowerCase() === 'set-cookie') {
-      console.log('override', header.value.toString());
       header.value = responseSetCookieValue
     }
   }
@@ -51,15 +62,13 @@ function rewriteResponseCookieHeader(e) {
 }
 
 browser.webRequest.onBeforeSendHeaders.addListener(
-  rewriteRequestCookieHeader,
+  rewriteRequestHeader,
   { urls: [targetPage] },
   ['blocking', 'requestHeaders']
 );
 
 browser.webRequest.onHeadersReceived.addListener(
-  rewriteResponseCookieHeader,
+  rewriteResponseHeader,
   { urls: [targetPage] },
   ['blocking', 'responseHeaders']
 );
-
-

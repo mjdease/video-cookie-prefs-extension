@@ -1,0 +1,1 @@
+Sets cookies to have youtube to load in dark mode, theatre mode, and with autoplay disabled.
