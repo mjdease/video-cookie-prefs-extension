@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "web-ext run --browser-console --start-url https://www.youtube.com/watch?v=FnA9YcDQ14s --firefox-profile video-cookie-prefs",
+    "sign": "web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
